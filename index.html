@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
@@ -62,7 +61,7 @@
       white-space: nowrap;
       font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 2px 7px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.06);
     }
 
     .filter.active {
@@ -80,7 +79,7 @@
       background: white;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
     .flower-image {
@@ -134,13 +133,13 @@
       color: #777;
     }
   </style>
-
 </head>
 
 <body>
 
   <div class="header">
     <div class="logo">🌹 GulTop</div>
+
     <div class="subtitle">
       Gullarni oson toping va buyurtma qiling
     </div>
@@ -148,23 +147,21 @@
 
   <div class="container">
 
-```
-<div class="title">
-  🌷 Gullar
-</div>
+    <div class="title">
+      🌷 Gullar
+    </div>
 
-<div class="filters" id="filters">
-  <button class="filter active" onclick="filterFlowers('all')">
-    Barchasi
-  </button>
-</div>
+    <div class="filters" id="filters">
+      <button class="filter active" onclick="filterFlowers('all')">
+        Barchasi
+      </button>
+    </div>
 
-<div id="flowers" class="flowers">
-  <div class="loading">
-    🌷 Gullar yuklanmoqda...
-  </div>
-</div>
-```
+    <div id="flowers" class="flowers">
+      <div class="loading">
+        🌷 Gullar yuklanmoqda...
+      </div>
+    </div>
 
   </div>
 
@@ -175,11 +172,16 @@
 
     let allFlowers = [];
 
+
     async function loadFlowers() {
 
       try {
 
         const response = await fetch(API_URL);
+
+        if (!response.ok) {
+          throw new Error("API xatosi");
+        }
 
         const flowers = await response.json();
 
@@ -188,6 +190,7 @@
         });
 
         createFilters();
+
         showFlowers(allFlowers);
 
       } catch (error) {
@@ -217,6 +220,7 @@
 
       });
 
+
       categories.forEach(function(category) {
 
         const button = document.createElement("button");
@@ -244,6 +248,7 @@
         button.classList.remove("active");
       });
 
+
       if (category === "all") {
 
         buttons[0].classList.add("active");
@@ -253,6 +258,7 @@
         return;
       }
 
+
       buttons.forEach(function(button) {
 
         if (button.innerText === category) {
@@ -261,11 +267,13 @@
 
       });
 
+
       const filtered = allFlowers.filter(function(flower) {
 
         return flower.category === category;
 
       });
+
 
       showFlowers(filtered);
 
@@ -278,6 +286,7 @@
 
       container.innerHTML = "";
 
+
       if (flowers.length === 0) {
 
         container.innerHTML =
@@ -286,14 +295,17 @@
         return;
       }
 
+
       flowers.forEach(function(flower) {
 
         const card = document.createElement("div");
 
         card.className = "flower";
 
+
         const price = Number(flower.price || 0)
           .toLocaleString("uz-UZ");
+
 
         card.innerHTML = `
 
@@ -322,6 +334,7 @@
           </div>
 
         `;
+
 
         container.appendChild(card);
 
