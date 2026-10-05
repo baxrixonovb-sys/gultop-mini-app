@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
@@ -19,7 +20,7 @@
 
     .header {
       background: white;
-      padding: 20px;
+      padding: 20px 16px;
       text-align: center;
       border-bottom: 1px solid #eee;
     }
@@ -45,68 +46,293 @@
       margin-bottom: 15px;
     }
 
-    .categories {
+    .filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 8px;
+    }
+
+    .filter {
+      border: none;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      white-space: nowrap;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.06);
+    }
+
+    .filter.active {
+      background: #e91e63;
+      color: white;
+    }
+
+    .flowers {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
 
-    .category {
+    .flower {
       background: white;
       border-radius: 16px;
-      padding: 22px 10px;
-      text-align: center;
-      font-size: 17px;
+      overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      cursor: pointer;
     }
 
-    .category span {
-      display: block;
-      font-size: 34px;
+    .flower-image {
+      width: 100%;
+      height: 150px;
+      background: #fce4ec;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 55px;
+    }
+
+    .flower-info {
+      padding: 12px;
+    }
+
+    .flower-name {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .flower-category {
+      color: #888;
+      font-size: 12px;
       margin-bottom: 8px;
     }
+
+    .flower-price {
+      font-size: 16px;
+      font-weight: bold;
+      color: #e91e63;
+      margin-bottom: 8px;
+    }
+
+    .flower-description {
+      color: #666;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 10px;
+      color: #777;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px 10px;
+      color: #777;
+    }
   </style>
+
 </head>
 
 <body>
 
   <div class="header">
     <div class="logo">🌹 GulTop</div>
-    <div class="subtitle">Gullarni oson toping va buyurtma qiling</div>
+    <div class="subtitle">
+      Gullarni oson toping va buyurtma qiling
+    </div>
   </div>
 
   <div class="container">
 
-    <div class="title">
-      🌷 Gul turini tanlang
-    </div>
+```
+<div class="title">
+  🌷 Gullar
+</div>
 
-    <div class="categories">
+<div class="filters" id="filters">
+  <button class="filter active" onclick="filterFlowers('all')">
+    Barchasi
+  </button>
+</div>
 
-      <div class="category">
-        <span>🌹</span>
-        Atirgul
-      </div>
-
-      <div class="category">
-        <span>🌷</span>
-        Liliya
-      </div>
-
-      <div class="category">
-        <span>💐</span>
-        Tayyor buket
-      </div>
-
-      <div class="category">
-        <span>🌸</span>
-        Boshqa gullar
-      </div>
-
-    </div>
+<div id="flowers" class="flowers">
+  <div class="loading">
+    🌷 Gullar yuklanmoqda...
+  </div>
+</div>
+```
 
   </div>
+
+  <script>
+
+    const API_URL =
+      "https://script.google.com/macros/s/AKfycbxNoB7HYdshhy8NpPPQ_h20V-5Z6_6sDDEwI3NUvpqEJIw4pBeNqJuD_863tJ7bB0B10g/exec";
+
+    let allFlowers = [];
+
+    async function loadFlowers() {
+
+      try {
+
+        const response = await fetch(API_URL);
+
+        const flowers = await response.json();
+
+        allFlowers = flowers.filter(function(flower) {
+          return flower.status === "Faol" || flower.status === "";
+        });
+
+        createFilters();
+        showFlowers(allFlowers);
+
+      } catch (error) {
+
+        document.getElementById("flowers").innerHTML =
+          '<div class="empty">❌ Gullarni yuklashda xatolik yuz berdi.</div>';
+
+        console.log(error);
+      }
+    }
+
+
+    function createFilters() {
+
+      const filters = document.getElementById("filters");
+
+      const categories = [];
+
+      allFlowers.forEach(function(flower) {
+
+        if (
+          flower.category &&
+          !categories.includes(flower.category)
+        ) {
+          categories.push(flower.category);
+        }
+
+      });
+
+      categories.forEach(function(category) {
+
+        const button = document.createElement("button");
+
+        button.className = "filter";
+
+        button.innerText = category;
+
+        button.onclick = function() {
+          filterFlowers(category);
+        };
+
+        filters.appendChild(button);
+
+      });
+
+    }
+
+
+    function filterFlowers(category) {
+
+      const buttons = document.querySelectorAll(".filter");
+
+      buttons.forEach(function(button) {
+        button.classList.remove("active");
+      });
+
+      if (category === "all") {
+
+        buttons[0].classList.add("active");
+
+        showFlowers(allFlowers);
+
+        return;
+      }
+
+      buttons.forEach(function(button) {
+
+        if (button.innerText === category) {
+          button.classList.add("active");
+        }
+
+      });
+
+      const filtered = allFlowers.filter(function(flower) {
+
+        return flower.category === category;
+
+      });
+
+      showFlowers(filtered);
+
+    }
+
+
+    function showFlowers(flowers) {
+
+      const container = document.getElementById("flowers");
+
+      container.innerHTML = "";
+
+      if (flowers.length === 0) {
+
+        container.innerHTML =
+          '<div class="empty">🌷 Hozircha bu kategoriyada gul yo‘q.</div>';
+
+        return;
+      }
+
+      flowers.forEach(function(flower) {
+
+        const card = document.createElement("div");
+
+        card.className = "flower";
+
+        const price = Number(flower.price || 0)
+          .toLocaleString("uz-UZ");
+
+        card.innerHTML = `
+
+          <div class="flower-image">
+            🌹
+          </div>
+
+          <div class="flower-info">
+
+            <div class="flower-name">
+              ${flower.name || "Nomsiz gul"}
+            </div>
+
+            <div class="flower-category">
+              ${flower.category || ""}
+            </div>
+
+            <div class="flower-price">
+              ${price} so‘m
+            </div>
+
+            <div class="flower-description">
+              ${flower.description || ""}
+            </div>
+
+          </div>
+
+        `;
+
+        container.appendChild(card);
+
+      });
+
+    }
+
+
+    loadFlowers();
+
+  </script>
 
 </body>
 </html>
